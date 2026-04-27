@@ -1,0 +1,78 @@
+<div class="analyzer-wrapper">
+  <div class="card">
+    <div class="card-header">
+      <span class="shield-icon">🔐</span>
+      <h1>Password Strength Analyzer</h1>
+      <p class="subtitle">Check how secure your password is against cyber attacks</p>
+    </div>
+
+    <div class="input-group">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        [(ngModel)]="password"
+        placeholder="Enter your password..."
+        (keyup.enter)="analyze()"
+        class="password-input"
+      />
+      <button class="toggle-btn" (click)="showPassword = !showPassword" title="Toggle visibility">
+        {{ showPassword ? '🙈' : '👁️' }}
+      </button>
+    </div>
+
+    <div class="actions">
+      <button class="btn-analyze" (click)="analyze()" [disabled]="loading || !password.trim()">
+        {{ loading ? 'Analyzing...' : 'Analyze Password' }}
+      </button>
+      <button class="btn-reset" (click)="reset()" *ngIf="result">Reset</button>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <div class="result" *ngIf="result">
+      <div class="strength-label" [style.color]="strengthColor">
+        Strength: <strong>{{ result.strengthLevel }}</strong>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill"
+          [style.width.%]="strengthPercent"
+          [style.background]="strengthColor">
+        </div>
+      </div>
+
+      <div class="checks">
+        <div class="check-item" [class.pass]="result.passwordLength >= 8">
+          {{ result.passwordLength >= 8 ? '✅' : '❌' }} Min 8 characters ({{ result.passwordLength }} used)
+        </div>
+        <div class="check-item" [class.pass]="result.hasUppercase">
+          {{ result.hasUppercase ? '✅' : '❌' }} Uppercase letters
+        </div>
+        <div class="check-item" [class.pass]="result.hasLowercase">
+          {{ result.hasLowercase ? '✅' : '❌' }} Lowercase letters
+        </div>
+        <div class="check-item" [class.pass]="result.hasNumbers">
+          {{ result.hasNumbers ? '✅' : '❌' }} Numbers
+        </div>
+        <div class="check-item" [class.pass]="result.hasSpecialCharacters">
+          {{ result.hasSpecialCharacters ? '✅' : '❌' }} Special characters
+        </div>
+      </div>
+
+      <div class="suggestions" *ngIf="result.suggestions.length">
+        <h3>💡 Suggestions</h3>
+        <ul>
+          <li *ngFor="let s of result.suggestions">{{ s }}</li>
+        </ul>
+      </div>
+
+      <div class="security-info">
+        <h3>⚠️ Why Password Strength Matters</h3>
+        <ul>
+          <li><strong>Brute Force:</strong> Weak passwords are cracked in seconds by automated tools</li>
+          <li><strong>Dictionary Attack:</strong> Common words/passwords are the first to be tried</li>
+          <li><strong>Credential Stuffing:</strong> Reused passwords expose multiple accounts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
