@@ -16,7 +16,7 @@ export interface AnalysisResult {
 
 @Injectable({ providedIn: 'root' })
 export class PasswordService {
-  private api = 'http://localhost:3000/api';
+  private api = '/api';
 
   constructor(private http: HttpClient) {}
 
