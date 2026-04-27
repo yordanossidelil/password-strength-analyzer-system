@@ -1,78 +1,176 @@
-<div class="analyzer-wrapper">
-  <div class="card">
-    <div class="card-header">
-      <span class="shield-icon">🔐</span>
-      <h1>Password Strength Analyzer</h1>
-      <p class="subtitle">Check how secure your password is against cyber attacks</p>
+<div class="page">
+  <div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="panel main-panel">
+      <div class="panel-header">
+        <span class="panel-tag">// THREAT ANALYSIS MODULE</span>
+        <span class="panel-id">v2.4.1</span>
+      </div>
+
+      <div class="hero">
+        <div class="shield-wrap">
+          <svg class="shield-svg" viewBox="0 0 80 90" fill="none">
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path d="M40 4L8 18v20c0 18.8 13.7 36.4 32 41 18.3-4.6 32-22.2 32-41V18L40 4z"
+              fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1.5" filter="url(#glow)"/>
+            <path d="M28 45l9 9 15-15" stroke="#00ff88" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+          </svg>
+          <div class="shield-ring ring1"></div>
+          <div class="shield-ring ring2"></div>
+        </div>
+
+        <div class="hero-text">
+          <h1 class="title">PASSWORD<br><span class="title-accent">THREAT SCANNER</span></h1>
+          <p class="subtitle">// Analyze cryptographic strength & vulnerability exposure</p>
+        </div>
+      </div>
+
+      <div class="terminal-box">
+        <div class="terminal-bar">
+          <span class="t-dot red"></span>
+          <span class="t-dot yellow"></span>
+          <span class="t-dot green"></span>
+          <span class="t-label">root&#64;passguard:~$</span>
+        </div>
+        <div class="input-row">
+          <span class="prompt">&#62;_</span>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="password"
+            placeholder="enter_password_to_scan..."
+            (keyup.enter)="analyze()"
+            class="terminal-input"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="eye-btn" (click)="showPassword = !showPassword" [title]="showPassword ? 'Hide' : 'Show'">
+            <svg *ngIf="!showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg *ngIf="showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-scan" (click)="analyze()" [disabled]="loading || !password.trim()">
+          <span *ngIf="!loading" class="btn-inner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            INITIATE SCAN
+          </span>
+          <span *ngIf="loading" class="btn-inner scanning">
+            <span class="spin-ring"></span> SCANNING...
+          </span>
+        </button>
+        <button class="btn-clear" (click)="reset()" *ngIf="result || password">CLEAR</button>
+      </div>
+
+      <div class="error-msg" *ngIf="error">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error }}
+      </div>
     </div>
 
-    <div class="input-group">
-      <input
-        [type]="showPassword ? 'text' : 'password'"
-        [(ngModel)]="password"
-        placeholder="Enter your password..."
-        (keyup.enter)="analyze()"
-        class="password-input"
-      />
-      <button class="toggle-btn" (click)="showPassword = !showPassword" title="Toggle visibility">
-        {{ showPassword ? '🙈' : '👁️' }}
-      </button>
+    <!-- RIGHT PANEL — RESULTS -->
+    <div class="panel result-panel" *ngIf="result" [@.disabled]="false">
+
+      <!-- Strength Meter -->
+      <div class="strength-card" [style.border-color]="strengthConfig.color" [style.background]="strengthConfig.bg">
+        <div class="strength-top">
+          <span class="strength-icon" [style.color]="strengthConfig.color">{{ strengthConfig.icon }}</span>
+          <div>
+            <div class="strength-level" [style.color]="strengthConfig.color">{{ strengthConfig.label }}</div>
+            <div class="threat-time">{{ strengthConfig.threat }}</div>
+          </div>
+          <div class="strength-pct" [style.color]="strengthConfig.color">{{ strengthPercent }}%</div>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill"
+            [style.width.%]="strengthPercent"
+            [style.background]="strengthConfig.color"
+            [style.box-shadow]="'0 0 10px ' + strengthConfig.color">
+          </div>
+          <div class="meter-segments">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checks Grid -->
+      <div class="section-label">// SECURITY CHECKS</div>
+      <div class="checks-grid">
+        <div class="check-row" *ngFor="let c of checks" [class.pass]="c.pass" [class.fail]="!c.pass">
+          <span class="check-icon">{{ c.pass ? '▶' : '✕' }}</span>
+          <span class="check-label">{{ c.label }}</span>
+          <span class="check-detail">{{ c.detail }}</span>
+        </div>
+      </div>
+
+      <!-- Suggestions -->
+      <div *ngIf="result!.suggestions.length">
+        <div class="section-label">// RECOMMENDATIONS</div>
+        <div class="suggestions-list">
+          <div class="suggestion-item" *ngFor="let s of result!.suggestions">
+            <span class="s-arrow">→</span> {{ s }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Attack Vectors -->
+      <div class="section-label">// KNOWN ATTACK VECTORS</div>
+      <div class="attacks-grid">
+        <div class="attack-card">
+          <div class="attack-icon">⚡</div>
+          <div class="attack-name">BRUTE FORCE</div>
+          <div class="attack-desc">Automated tools try billions of combinations per second</div>
+        </div>
+        <div class="attack-card">
+          <div class="attack-icon">📖</div>
+          <div class="attack-name">DICTIONARY</div>
+          <div class="attack-desc">Common words & leaked password databases are tested first</div>
+        </div>
+        <div class="attack-card">
+          <div class="attack-icon">🔄</div>
+          <div class="attack-name">CREDENTIAL STUFFING</div>
+          <div class="attack-desc">Reused passwords expose all your accounts simultaneously</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="actions">
-      <button class="btn-analyze" (click)="analyze()" [disabled]="loading || !password.trim()">
-        {{ loading ? 'Analyzing...' : 'Analyze Password' }}
-      </button>
-      <button class="btn-reset" (click)="reset()" *ngIf="result">Reset</button>
+    <!-- IDLE RIGHT PANEL -->
+    <div class="panel idle-panel" *ngIf="!result">
+      <div class="idle-content">
+        <div class="idle-grid">
+          <div class="idle-stat" *ngFor="let s of [
+            {v:'2.3B', l:'PASSWORDS LEAKED (2024)'},
+            {v:'81%',  l:'BREACHES USE WEAK PASSWORDS'},
+            {v:'0.29s',l:'AVG CRACK TIME (WEAK)'},
+            {v:'100+', l:'YEARS (STRONG PASSWORD)'}
+          ]">
+            <div class="idle-val">{{ s.v }}</div>
+            <div class="idle-lbl">{{ s.l }}</div>
+          </div>
+        </div>
+        <div class="idle-hint">
+          <span class="blink">_</span> Enter a password to begin threat analysis
+        </div>
+      </div>
     </div>
 
-    <p class="error" *ngIf="error">{{ error }}</p>
-
-    <div class="result" *ngIf="result">
-      <div class="strength-label" [style.color]="strengthColor">
-        Strength: <strong>{{ result.strengthLevel }}</strong>
-      </div>
-
-      <div class="progress-bar">
-        <div class="progress-fill"
-          [style.width.%]="strengthPercent"
-          [style.background]="strengthColor">
-        </div>
-      </div>
-
-      <div class="checks">
-        <div class="check-item" [class.pass]="result.passwordLength >= 8">
-          {{ result.passwordLength >= 8 ? '✅' : '❌' }} Min 8 characters ({{ result.passwordLength }} used)
-        </div>
-        <div class="check-item" [class.pass]="result.hasUppercase">
-          {{ result.hasUppercase ? '✅' : '❌' }} Uppercase letters
-        </div>
-        <div class="check-item" [class.pass]="result.hasLowercase">
-          {{ result.hasLowercase ? '✅' : '❌' }} Lowercase letters
-        </div>
-        <div class="check-item" [class.pass]="result.hasNumbers">
-          {{ result.hasNumbers ? '✅' : '❌' }} Numbers
-        </div>
-        <div class="check-item" [class.pass]="result.hasSpecialCharacters">
-          {{ result.hasSpecialCharacters ? '✅' : '❌' }} Special characters
-        </div>
-      </div>
-
-      <div class="suggestions" *ngIf="result.suggestions.length">
-        <h3>💡 Suggestions</h3>
-        <ul>
-          <li *ngFor="let s of result.suggestions">{{ s }}</li>
-        </ul>
-      </div>
-
-      <div class="security-info">
-        <h3>⚠️ Why Password Strength Matters</h3>
-        <ul>
-          <li><strong>Brute Force:</strong> Weak passwords are cracked in seconds by automated tools</li>
-          <li><strong>Dictionary Attack:</strong> Common words/passwords are the first to be tried</li>
-          <li><strong>Credential Stuffing:</strong> Reused passwords expose multiple accounts</li>
-        </ul>
-      </div>
-    </div>
   </div>
 </div>

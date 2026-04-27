@@ -1,59 +1,123 @@
-<div class="history-wrapper">
-  <div class="card">
-    <div class="card-header">
-      <h1>📊 Analysis History</h1>
-      <p class="subtitle">Last 50 password analyses</p>
+<div class="page">
+  <div class="container">
+
+    <div class="page-header">
+      <div class="header-left">
+        <div class="page-tag">// THREAT INTELLIGENCE DATABASE</div>
+        <h1 class="page-title">ANALYSIS <span class="accent">HISTORY</span></h1>
+      </div>
+      <button class="btn-refresh" (click)="load()" [disabled]="loading">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          [class.spinning]="loading">
+          <path d="M23 4v6h-6M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        REFRESH
+      </button>
     </div>
 
-    <div class="stats" *ngIf="history.length">
-      <div class="stat weak">
-        <span class="count">{{ weakCount }}</span>
-        <span class="label">Weak</span>
+    <!-- Stats Row -->
+    <div class="stats-row" *ngIf="history.length">
+      <div class="stat-card total">
+        <div class="stat-val">{{ history.length }}</div>
+        <div class="stat-lbl">TOTAL SCANS</div>
       </div>
-      <div class="stat medium">
-        <span class="count">{{ mediumCount }}</span>
-        <span class="label">Medium</span>
+      <div class="stat-card weak">
+        <div class="stat-val">{{ weakCount }}</div>
+        <div class="stat-lbl">CRITICAL</div>
+        <div class="stat-bar"><div [style.width.%]="weakCount / history.length * 100"></div></div>
       </div>
-      <div class="stat strong">
-        <span class="count">{{ strongCount }}</span>
-        <span class="label">Strong</span>
+      <div class="stat-card medium">
+        <div class="stat-val">{{ mediumCount }}</div>
+        <div class="stat-lbl">MODERATE</div>
+        <div class="stat-bar"><div [style.width.%]="mediumCount / history.length * 100"></div></div>
+      </div>
+      <div class="stat-card strong">
+        <div class="stat-val">{{ strongCount }}</div>
+        <div class="stat-lbl">SECURE</div>
+        <div class="stat-bar"><div [style.width.%]="strongCount / history.length * 100"></div></div>
       </div>
     </div>
 
-    <p class="error" *ngIf="error">{{ error }}</p>
-    <p class="loading" *ngIf="loading">Loading...</p>
-    <p class="empty" *ngIf="!loading && !history.length">No history yet. Analyze a password first.</p>
-
-    <div class="table-wrap" *ngIf="!loading && history.length">
-      <table>
-        <thead>
-          <tr>
-            <th>Length</th>
-            <th>Strength</th>
-            <th>U</th><th>L</th><th>N</th><th>S</th>
-            <th>Date</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of history">
-            <td>{{ item.passwordLength }}</td>
-            <td>
-              <span class="badge" [style.background]="badgeColor(item.strengthLevel)">
-                {{ item.strengthLevel }}
-              </span>
-            </td>
-            <td>{{ item.hasUppercase ? '✅' : '❌' }}</td>
-            <td>{{ item.hasLowercase ? '✅' : '❌' }}</td>
-            <td>{{ item.hasNumbers ? '✅' : '❌' }}</td>
-            <td>{{ item.hasSpecialCharacters ? '✅' : '❌' }}</td>
-            <td>{{ item.createdAt | date:'short' }}</td>
-            <td>
-              <button class="del-btn" (click)="delete(item._id)" title="Delete">🗑️</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- States -->
+    <div class="state-msg error-msg" *ngIf="error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
     </div>
+
+    <div class="state-msg loading-msg" *ngIf="loading">
+      <span class="spin-ring"></span> LOADING RECORDS...
+    </div>
+
+    <div class="state-msg empty-msg" *ngIf="!loading && !history.length && !error">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+      </svg>
+      <div>NO RECORDS FOUND</div>
+      <div class="empty-sub">Analyze a password to populate the database</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-panel" *ngIf="!loading && history.length">
+      <div class="table-header-bar">
+        <span class="table-tag">// SCAN LOG — {{ history.length }} ENTRIES</span>
+        <span class="table-live"><span class="dot"></span> LIVE</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>STRENGTH</th>
+              <th>LENGTH</th>
+              <th>UPPER</th>
+              <th>LOWER</th>
+              <th>NUMS</th>
+              <th>SPECIAL</th>
+              <th>TIMESTAMP</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of history; let i = index" class="table-row">
+              <td class="row-num">{{ i + 1 }}</td>
+              <td>
+                <span class="badge" [class.weak]="item.strengthLevel==='Weak'"
+                  [class.medium]="item.strengthLevel==='Medium'"
+                  [class.strong]="item.strengthLevel==='Strong'">
+                  <span class="badge-dot"></span>
+                  {{ item.strengthLevel | uppercase }}
+                </span>
+              </td>
+              <td class="mono-cell">{{ item.passwordLength }}</td>
+              <td class="check-cell" [class.yes]="item.hasUppercase" [class.no]="!item.hasUppercase">
+                {{ item.hasUppercase ? '✓' : '✕' }}
+              </td>
+              <td class="check-cell" [class.yes]="item.hasLowercase" [class.no]="!item.hasLowercase">
+                {{ item.hasLowercase ? '✓' : '✕' }}
+              </td>
+              <td class="check-cell" [class.yes]="item.hasNumbers" [class.no]="!item.hasNumbers">
+                {{ item.hasNumbers ? '✓' : '✕' }}
+              </td>
+              <td class="check-cell" [class.yes]="item.hasSpecialCharacters" [class.no]="!item.hasSpecialCharacters">
+                {{ item.hasSpecialCharacters ? '✓' : '✕' }}
+              </td>
+              <td class="mono-cell time-cell">{{ item.createdAt | date:'MM/dd HH:mm:ss' }}</td>
+              <td>
+                <button class="del-btn" (click)="delete(item._id)" title="Delete record">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>

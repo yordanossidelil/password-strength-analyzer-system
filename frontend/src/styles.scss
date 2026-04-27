@@ -1,11 +1,38 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --green:       #00ff88;
+  --green-dim:   #00cc6a;
+  --green-glow:  rgba(0, 255, 136, 0.15);
+  --cyan:        #00d4ff;
+  --red:         #ff4757;
+  --yellow:      #ffa502;
+  --bg:          #020c06;
+  --bg2:         #041a0e;
+  --surface:     rgba(0, 255, 136, 0.04);
+  --border:      rgba(0, 255, 136, 0.15);
+  --border-bright: rgba(0, 255, 136, 0.4);
+  --text:        #c8ffd4;
+  --text-dim:    #4a7c59;
+  --mono:        'Share Tech Mono', monospace;
+  --display:     'Orbitron', sans-serif;
+  --body:        'Inter', sans-serif;
 }
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #0f0c29;
-  color: #fff;
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--green-dim); border-radius: 3px; }
+
+::selection { background: var(--green-glow); color: var(--green); }
